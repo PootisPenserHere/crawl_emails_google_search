@@ -1,6 +1,7 @@
 import mechanize
 from bs4 import BeautifulSoup
 import re
+import json
 
 # Initialize the browser
 browser = mechanize.Browser()
@@ -14,7 +15,12 @@ browser.select_form(name='f')
 browser.form['q'] = 'python'
 data = browser.submit() # Search result
 
+# Returned data
+links = []
+
 # Parsing the html
 soup = BeautifulSoup(data.read(),"html5lib")
 for a in soup.select('.r a'):
-    print (a['href'])
+    links.append(a['href'])
+
+print json.dumps(links)
