@@ -1,4 +1,3 @@
-from urlparse import urlparse
 import mechanize
 from bs4 import BeautifulSoup
 import re
@@ -12,10 +11,10 @@ browser.open('http://www.google.com.mx/')
 
 # Querying to google
 browser.select_form(name='f')
-browser.form['q'] = 'scrapy'
+browser.form['q'] = 'python'
 data = browser.submit() # Search result
 
 # Parsing the html
 soup = BeautifulSoup(data.read(),"html5lib")
 for a in soup.select('.r a'):
-    print (a)
+    print (a['href'])
