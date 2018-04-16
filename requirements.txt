@@ -1,0 +1,12 @@
+BeautifulSoup==3.2.1
+beautifulsoup4==4.6.0
+certifi==2018.1.18
+chardet==3.0.4
+html5lib==1.0.1
+idna==2.6
+mechanize==0.3.6
+requests==2.18.4
+six==1.11.0
+urllib3==1.22
+virtualenv==15.2.0
+webencodings==0.5.1
