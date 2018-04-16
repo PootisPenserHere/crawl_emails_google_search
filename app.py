@@ -23,4 +23,12 @@ soup = BeautifulSoup(data.read(),"html5lib")
 for a in soup.select('.r a'):
     links.append(a['href'])
 
+# TODO: clean up the re used code
+for i in range(0, 3):
+    data = browser.follow_link(text='Next')
+    soup = BeautifulSoup(data.read(),"html5lib")
+
+    for a in soup.select('.r a'):
+        links.append(a['href'])
+
 print json.dumps(links)
