@@ -67,6 +67,8 @@ class Crawler(object):
             self.find_email()
 
             if self.emails_found is not None:
+                self.emails_found = self.emails_found.group(0)
+                self.emails_found = self.emails_found.encode('ascii', 'ignore')
                 self.scrapped_data[url] = {}
                 self.scrapped_data[url]['finds'] = self.emails_found
 
@@ -76,5 +78,4 @@ class Crawler(object):
 
 
 Crawler = Crawler(user_agent, search_term)
-# print json.dumps(Crawler.scrap_emails(result_pages_checked))
-print Crawler.scrap_emails(result_pages_checked)
+print json.dumps(Crawler.scrap_emails(result_pages_checked))
