@@ -51,6 +51,11 @@ class Crawler(object):
 
         # Initializing the random number generator
         self.sr = self.SystemRandom()
+        
+        # Request headers 
+        self.headers = {
+            'User-Agent': user_agent
+        }
 
     def parse_results(self):
         soup = self.BeautifulSoup(self.data.read(),"html5lib")
@@ -73,7 +78,7 @@ class Crawler(object):
                 self.parse_results()
 
     def fetch_html(self, url):
-        self.site_html = self.requests.get(url)
+        self.site_html = self.requests.get(url, headers=self.headers)
 
     def find_email(self):
         self.emails_found = self.re.search(r'[\w\.-]+@[\w\.-]+', self.site_html.text)
