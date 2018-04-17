@@ -2,26 +2,39 @@ import json
 
 # Configuration variables
 user_agent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0'
-search_term = 'facebook'
-result_pages_checked = 1
+search_term = 'email'
+result_pages_checked = 3
+
+# To randomize the reading time of the result pages
+minimum_time_per_page = 10
+maximum_time_per_page = 18
 
 class Crawler(object):
-    def __init__(self, user_agent, search_term):
+    def __init__(self, user_agent, search_term, minimum_time_per_page, maximum_time_per_page):
         import mechanize
         from bs4 import BeautifulSoup
         import requests
         import re
+        from random import SystemRandom
+        from time import sleep
 
         self.mechanize = mechanize
         self.BeautifulSoup = BeautifulSoup
         self.requests = requests
         self.re = re
+        self.SystemRandom = SystemRandom
+        self.sleep = sleep
+
+        # Configuration perams
+        self.minimum_time_per_page = minimum_time_per_page
+        self.maximum_time_per_page = maximum_time_per_page
 
         # Processed data
         self.links = [] # Will contain all the links found
         self.site_html = '' # The souce code of the site being crawled
-        self.emails_found = ''
+        self.emails_found = '' # Emails found in the site being currently scraped
         self.scrapped_data = {} # Emails found
+        self.random_wait_time = ''
 
         # Initialize the browser
         self.browser = self.mechanize.Browser()
@@ -36,6 +49,9 @@ class Crawler(object):
         self.browser.form['q'] = search_term
         self.data = self.browser.submit() # Search result
 
+        # Initializing the random number generator
+        self.sr = self.SystemRandom()
+
     def parse_results(self):
         soup = self.BeautifulSoup(self.data.read(),"html5lib")
         for a in soup.select('.r a'):
@@ -48,6 +64,10 @@ class Crawler(object):
 
         # If more than one page of results is wanted
         if result_pages_checked > 1:
+            # Sleeps for a random period of time
+            self.random_number()
+            self.sleep(self.random_wait_time)
+            
             for i in range(1, result_pages_checked):
                 self.data = self.browser.follow_link(text='Next')
                 self.parse_results()
@@ -57,6 +77,10 @@ class Crawler(object):
 
     def find_email(self):
         self.emails_found = self.re.search(r'[\w\.-]+@[\w\.-]+', self.site_html.text)
+
+    def random_number(self):
+        number = self.sr.choice(xrange(self.minimum_time_per_page, self.maximum_time_per_page))
+        self.random_wait_time = number
 
     def scrap_emails(self, result_pages_checked):
         self.fetch_results(result_pages_checked)
@@ -74,8 +98,5 @@ class Crawler(object):
 
         return self.scrapped_data
 
-
-
-
-Crawler = Crawler(user_agent, search_term)
+Crawler = Crawler(user_agent, search_term, minimum_time_per_page, maximum_time_per_page)
 print json.dumps(Crawler.scrap_emails(result_pages_checked))
