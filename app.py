@@ -80,7 +80,7 @@ class Crawler(object):
                   self.data = self.browser.follow_link(text='Next')
                   self.parse_results()
                   self.total_result_pages_found += 1
-                except (self.mechanize.HTTPError,self.mechanize.URLError) as e:
+                except (self.mechanize.HTTPError,self.mechanize.URLError, self.mechanize.LinkNotFoundError) as e:
                   return False
 
     def fetch_html(self, url):
