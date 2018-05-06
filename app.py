@@ -7,7 +7,7 @@ result_pages_checked = 3
 
 # To randomize the reading time of the result pages
 minimum_time_per_page = 10
-maximum_time_per_page = 18
+maximum_time_per_page = 10
 
 class Crawler(object):
     def __init__(self, user_agent, search_term, minimum_time_per_page, maximum_time_per_page):
@@ -34,7 +34,10 @@ class Crawler(object):
         self.site_html = '' # The souce code of the site being crawled
         self.emails_found = '' # Emails found in the site being currently scraped
         self.scrapped_data = {} # Emails found
-        self.random_wait_time = ''
+        self.random_wait_time = '' # Time till the next query to google search
+        self.total_result_pages_found = 1
+        self.timeoutToFetchHtml = 5 # In seconds
+        self.urls_with_errors = []
 
         # Initialize the browser
         self.browser = self.mechanize.Browser()
@@ -51,8 +54,8 @@ class Crawler(object):
 
         # Initializing the random number generator
         self.sr = self.SystemRandom()
-        
-        # Request headers 
+
+        # Request headers
         self.headers = {
             'User-Agent': user_agent
         }
@@ -69,16 +72,27 @@ class Crawler(object):
 
         # If more than one page of results is wanted
         if result_pages_checked > 1:
-            # Sleeps for a random period of time
-            self.random_number()
-            self.sleep(self.random_wait_time)
-            
+
             for i in range(1, result_pages_checked):
-                self.data = self.browser.follow_link(text='Next')
-                self.parse_results()
+                # Sleeps for a random period of time
+                self.random_number()
+                self.sleep(self.random_wait_time)
+
+                try:
+                  self.data = self.browser.follow_link(text='Next')
+                  self.parse_results()
+                  self.total_result_pages_found += 1
+                except (self.mechanize.HTTPError,self.mechanize.URLError, self.mechanize.LinkNotFoundError) as e:
+                  return False
 
     def fetch_html(self, url):
-        self.site_html = self.requests.get(url, headers=self.headers)
+        self.sleep(0.01)
+        try:
+            self.site_html = self.requests.get(url, headers=self.headers, timeout=self.timeoutToFetchHtml)
+            return True
+        except self.requests.exceptions.RequestException as e:
+            self.urls_with_errors.append(url)
+            return False
 
     def find_email(self):
         self.emails_found = self.re.search(r'[\w\.-]+@[\w\.-]+', self.site_html.text)
@@ -92,14 +106,23 @@ class Crawler(object):
 
         for url in self.links:
             self.site_html = ''
-            self.fetch_html(url)
-            self.find_email()
+            if self.fetch_html(url) is True:
+                self.find_email()
 
-            if self.emails_found is not None:
-                self.emails_found = self.emails_found.group(0)
-                self.emails_found = self.emails_found.encode('ascii', 'ignore')
-                self.scrapped_data[url] = {}
-                self.scrapped_data[url]['finds'] = self.emails_found
+                if self.emails_found is not None:
+                    self.emails_found = self.emails_found.group(0)
+                    self.emails_found = self.emails_found.encode('ascii', 'ignore')
+                    self.scrapped_data[url] = {}
+                    self.scrapped_data[url]['finds'] = self.emails_found
+
+        self.scrapped_data['pages_found'] = {}
+        #self.scrapped_data['pages_found']['desired'] =
+        self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
+        self.scrapped_data['urls_with_errors'] = self.urls_with_errors
+
+        self.scrapped_data['pages_found'] = {}
+        #self.scrapped_data['pages_found']['desired'] = 
+        self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
 
         return self.scrapped_data
 
