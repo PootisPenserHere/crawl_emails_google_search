@@ -104,6 +104,7 @@ class Crawler(object):
 
     def scrap_emails(self):
         self.fetch_results()
+        finds = {}
 
         for url in self.links:
             self.site_html = ''
@@ -113,17 +114,15 @@ class Crawler(object):
                 if self.emails_found is not None:
                     self.emails_found = self.emails_found.group(0)
                     self.emails_found = self.emails_found.encode('ascii', 'ignore')
-                    self.scrapped_data[url] = {}
-                    self.scrapped_data[url]['finds'] = self.emails_found
+                    finds[url] = {}
+                    finds[url]['emails'] = self.emails_found
 
-        self.scrapped_data['pages_found'] = {}
-        #self.scrapped_data['pages_found']['desired'] =
-        self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
-        self.scrapped_data['urls_with_errors'] = self.urls_with_errors
-
-        self.scrapped_data['pages_found'] = {}
-        #self.scrapped_data['pages_found']['desired'] =
-        self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
+        self.scrapped_data['result_pages'] = {}
+        self.scrapped_data['result_pages']['desired'] = self.result_pages_checked
+        self.scrapped_data['result_pages']['found'] = self.total_result_pages_found
+        self.scrapped_data['errors'] = self.urls_with_errors
+        self.scrapped_data['finds'] = {}
+        self.scrapped_data['finds'] = finds
 
         return self.scrapped_data
 
