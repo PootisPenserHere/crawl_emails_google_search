@@ -131,4 +131,4 @@ class Crawler(object):
         return self.scrapped_data
 
 Crawler = Crawler(user_agent, search_term, minimum_time_per_page, maximum_time_per_page, result_pages_checked)
-print json.dumps(Crawler.scrap_emails())
+print json.dumps(Crawler.scrap_emails(), sort_keys=True, indent=4)
