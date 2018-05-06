@@ -120,6 +120,10 @@ class Crawler(object):
         self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
         self.scrapped_data['urls_with_errors'] = self.urls_with_errors
 
+        self.scrapped_data['pages_found'] = {}
+        #self.scrapped_data['pages_found']['desired'] = 
+        self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
+
         return self.scrapped_data
 
 Crawler = Crawler(user_agent, search_term, minimum_time_per_page, maximum_time_per_page)
