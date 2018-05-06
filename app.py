@@ -7,7 +7,7 @@ result_pages_checked = 3
 
 # To randomize the reading time of the result pages
 minimum_time_per_page = 10
-maximum_time_per_page = 18
+maximum_time_per_page = 10
 
 class Crawler(object):
     def __init__(self, user_agent, search_term, minimum_time_per_page, maximum_time_per_page):
@@ -37,6 +37,7 @@ class Crawler(object):
         self.random_wait_time = '' # Time till the next query to google search
         self.total_result_pages_found = 1
         self.timeoutToFetchHtml = 5 # In seconds
+        self.urls_with_errors = []
 
         # Initialize the browser
         self.browser = self.mechanize.Browser()
@@ -90,7 +91,7 @@ class Crawler(object):
             self.site_html = self.requests.get(url, headers=self.headers, timeout=self.timeoutToFetchHtml)
             return True
         except self.requests.exceptions.RequestException as e:
-            print url
+            self.urls_with_errors.append(url)
             return False
 
     def find_email(self):
@@ -117,6 +118,7 @@ class Crawler(object):
         self.scrapped_data['pages_found'] = {}
         #self.scrapped_data['pages_found']['desired'] =
         self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
+        self.scrapped_data['urls_with_errors'] = self.urls_with_errors
 
         return self.scrapped_data
 
