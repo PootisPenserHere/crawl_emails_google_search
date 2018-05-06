@@ -10,7 +10,7 @@ minimum_time_per_page = 10
 maximum_time_per_page = 10
 
 class Crawler(object):
-    def __init__(self, user_agent, search_term, minimum_time_per_page, maximum_time_per_page):
+    def __init__(self, user_agent, search_term, minimum_time_per_page, maximum_time_per_page, result_pages_checked):
         import mechanize
         from bs4 import BeautifulSoup
         import requests
@@ -38,6 +38,7 @@ class Crawler(object):
         self.total_result_pages_found = 1
         self.timeoutToFetchHtml = 5 # In seconds
         self.urls_with_errors = []
+        self.result_pages_checked = result_pages_checked
 
         # Initialize the browser
         self.browser = self.mechanize.Browser()
@@ -66,14 +67,14 @@ class Crawler(object):
             url = (a['href']).encode('ascii', 'ignore')
             self.links.append(url)
 
-    def fetch_results(self, result_pages_checked):
+    def fetch_results(self):
         # Starts by fetching the current page obtained when initializing
         self.parse_results()
 
         # If more than one page of results is wanted
-        if result_pages_checked > 1:
+        if self.result_pages_checked > 1:
 
-            for i in range(1, result_pages_checked):
+            for i in range(1, self.result_pages_checked):
                 # Sleeps for a random period of time
                 self.random_number()
                 self.sleep(self.random_wait_time)
@@ -101,8 +102,10 @@ class Crawler(object):
         number = self.sr.choice(xrange(self.minimum_time_per_page, self.maximum_time_per_page))
         self.random_wait_time = number
 
-    def scrap_emails(self, result_pages_checked):
-        self.fetch_results(result_pages_checked)
+    def scrap_emails(self):
+        self.fetch_results()
+        finds = {}
+        counter = 0
 
         for url in self.links:
             self.site_html = ''
@@ -112,19 +115,20 @@ class Crawler(object):
                 if self.emails_found is not None:
                     self.emails_found = self.emails_found.group(0)
                     self.emails_found = self.emails_found.encode('ascii', 'ignore')
-                    self.scrapped_data[url] = {}
-                    self.scrapped_data[url]['finds'] = self.emails_found
+                    finds[counter] = {}
+                    finds[counter]['url'] = url
+                    finds[counter]['emails'] = self.emails_found
 
-        self.scrapped_data['pages_found'] = {}
-        #self.scrapped_data['pages_found']['desired'] =
-        self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
-        self.scrapped_data['urls_with_errors'] = self.urls_with_errors
+                    counter += 1
 
-        self.scrapped_data['pages_found'] = {}
-        #self.scrapped_data['pages_found']['desired'] = 
-        self.scrapped_data['pages_found']['found'] = self.total_result_pages_found
+        self.scrapped_data['result_pages'] = {}
+        self.scrapped_data['result_pages']['desired'] = self.result_pages_checked
+        self.scrapped_data['result_pages']['found'] = self.total_result_pages_found
+        self.scrapped_data['errors'] = self.urls_with_errors
+        self.scrapped_data['finds'] = {}
+        self.scrapped_data['finds'] = finds
 
         return self.scrapped_data
 
-Crawler = Crawler(user_agent, search_term, minimum_time_per_page, maximum_time_per_page)
-print json.dumps(Crawler.scrap_emails(result_pages_checked))
+Crawler = Crawler(user_agent, search_term, minimum_time_per_page, maximum_time_per_page, result_pages_checked)
+print json.dumps(Crawler.scrap_emails(), sort_keys=True, indent=4)
