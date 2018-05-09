@@ -1,7 +1,6 @@
-"""
-crawl_emails_google_search, retrival of emails through google search
-Copyright (C) 2018  José Pablo Domingo Arámburo Sánchez
-
+""" crawl_emails_google_search, retrival of emails through google search
+Copyright (C) 2018  Jose Pablo Domingo Aramburo Sanchez
+ 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
 published by the Free Software Foundation, version 3 of the
@@ -24,8 +23,8 @@ search_term = 'email'
 result_pages_checked = 3
 
 # To randomize the reading time of the result pages
-minimum_time_per_page = 10
-maximum_time_per_page = 10
+minimum_time_per_page = 3
+maximum_time_per_page = 6
 
 class Crawler(object):
     def __init__(self, user_agent, search_term, minimum_time_per_page, maximum_time_per_page, result_pages_checked):
@@ -50,7 +49,7 @@ class Crawler(object):
         # Processed data
         self.links = [] # Will contain all the links found
         self.site_html = '' # The souce code of the site being crawled
-        self.emails_found = '' # Emails found in the site being currently scraped
+        self.emails_found = [] # Emails found in the site being currently scraped
         self.scrapped_data = {} # Emails found
         self.random_wait_time = '' # Time till the next query to google search
         self.total_result_pages_found = 1
@@ -119,7 +118,11 @@ class Crawler(object):
             return False
 
     def find_email(self):
-        self.emails_found = self.re.search(r'[\w\.-]+@[\w\.-]+', self.site_html.text)
+        emails = self.re.search(r'[\w\.-]+@[\w\.-]+', self.site_html.text)
+        
+        for x in emails:
+            if x in self.gtld:
+                self.emails_found.append(x)
 
     def random_number(self):
         number = self.sr.choice(xrange(self.minimum_time_per_page, self.maximum_time_per_page))
