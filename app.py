@@ -118,10 +118,11 @@ class Crawler(object):
             return False
 
     def find_email(self):
-        emails = self.re.search(r'[\w\.-]+@[\w\.-]+', self.site_html.text)
+        pattern = self.re.compile(r'[\w\.-]+@[\w\.-]+')
         
-        for x in emails:
+        for x in self.re.findall(pattern, self.site_html.text):
             if x in self.gtld:
+                x.encode('ascii', 'ignore')
                 self.emails_found.append(x)
 
     def random_number(self):
@@ -139,8 +140,6 @@ class Crawler(object):
                 self.find_email()
 
                 if self.emails_found is not None:
-                    self.emails_found = self.emails_found.group(0)
-                    self.emails_found = self.emails_found.encode('ascii', 'ignore')
                     finds[counter] = {}
                     finds[counter]['url'] = url
                     finds[counter]['emails'] = self.emails_found
