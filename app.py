@@ -57,6 +57,7 @@ class Crawler(object):
         self.timeoutToFetchHtml = 5 # In seconds
         self.urls_with_errors = []
         self.result_pages_checked = result_pages_checked
+        self.gtld =[] # Will contain all of the generic top level domains
 
         # Initialize the browser
         self.browser = self.mechanize.Browser()
@@ -78,6 +79,10 @@ class Crawler(object):
         self.headers = {
             'User-Agent': user_agent
         }
+        
+        # Generic top level domains
+        with open('gtld.csv', 'r') as fields:
+            self.gtld = fields.read().split('\n')
 
     def parse_results(self):
         soup = self.BeautifulSoup(self.data.read(),"html5lib")
