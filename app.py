@@ -1,6 +1,6 @@
 """ crawl_emails_google_search, retrival of emails through google search
 Copyright (C) 2018  Jose Pablo Domingo Aramburo Sanchez
- 
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
 published by the Free Software Foundation, version 3 of the
@@ -15,7 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from flask import Flask
+from flask import jsonify
 import json
+
+app = Flask(__name__)
 
 # Configuration variables
 user_agent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0'
@@ -78,7 +82,7 @@ class Crawler(object):
         self.headers = {
             'User-Agent': user_agent
         }
-        
+
         # Generic top level domains
         with open('gtld.csv', 'r') as fields:
             self.gtld = fields.read().split('\n')
@@ -119,10 +123,10 @@ class Crawler(object):
 
     def find_email(self):
         pattern = self.re.compile(r'[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+')
-        
+
         for x in self.re.findall(pattern, self.site_html.text):
             current_email_gtld = x.rsplit('.', 1)[1].upper()
-          
+
             if current_email_gtld in self.gtld:
                 x.encode('ascii', 'ignore')
                 self.emails_found.append(x)
@@ -157,5 +161,10 @@ class Crawler(object):
 
         return self.scrapped_data
 
-Crawler = Crawler(user_agent, search_term, minimum_time_per_page, maximum_time_per_page, result_pages_checked)
-print json.dumps(Crawler.scrap_emails(), sort_keys=True, indent=4)
+@app.route('/pages/<int:result_pages_checked>/search/<search_term>')
+def search_in_google(result_pages_checked, search_term):
+    crawl_it = Crawler(user_agent, search_term, minimum_time_per_page, maximum_time_per_page, result_pages_checked)
+    return jsonify(crawl_it.scrap_emails()), 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True)
