@@ -1,7 +1,6 @@
-"""
-crawl_emails_google_search, retrival of emails through google search
-Copyright (C) 2018  José Pablo Domingo Arámburo Sánchez
-
+""" crawl_emails_google_search, retrival of emails through google search
+Copyright (C) 2018  Jose Pablo Domingo Aramburo Sanchez
+ 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
 published by the Free Software Foundation, version 3 of the
@@ -24,8 +23,8 @@ search_term = 'email'
 result_pages_checked = 3
 
 # To randomize the reading time of the result pages
-minimum_time_per_page = 10
-maximum_time_per_page = 10
+minimum_time_per_page = 3
+maximum_time_per_page = 6
 
 class Crawler(object):
     def __init__(self, user_agent, search_term, minimum_time_per_page, maximum_time_per_page, result_pages_checked):
@@ -50,13 +49,14 @@ class Crawler(object):
         # Processed data
         self.links = [] # Will contain all the links found
         self.site_html = '' # The souce code of the site being crawled
-        self.emails_found = '' # Emails found in the site being currently scraped
+        self.emails_found = [] # Emails found in the site being currently scraped
         self.scrapped_data = {} # Emails found
         self.random_wait_time = '' # Time till the next query to google search
         self.total_result_pages_found = 1
         self.timeoutToFetchHtml = 5 # In seconds
         self.urls_with_errors = []
         self.result_pages_checked = result_pages_checked
+        self.gtld =[] # Will contain all of the generic top level domains
 
         # Initialize the browser
         self.browser = self.mechanize.Browser()
@@ -78,6 +78,10 @@ class Crawler(object):
         self.headers = {
             'User-Agent': user_agent
         }
+        
+        # Generic top level domains
+        with open('gtld.csv', 'r') as fields:
+            self.gtld = fields.read().split('\n')
 
     def parse_results(self):
         soup = self.BeautifulSoup(self.data.read(),"html5lib")
@@ -114,7 +118,14 @@ class Crawler(object):
             return False
 
     def find_email(self):
-        self.emails_found = self.re.search(r'[\w\.-]+@[\w\.-]+', self.site_html.text)
+        pattern = self.re.compile(r'[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+')
+        
+        for x in self.re.findall(pattern, self.site_html.text):
+            current_email_gtld = x.rsplit('.', 1)[1].upper()
+          
+            if current_email_gtld in self.gtld:
+                x.encode('ascii', 'ignore')
+                self.emails_found.append(x)
 
     def random_number(self):
         number = self.sr.choice(xrange(self.minimum_time_per_page, self.maximum_time_per_page))
@@ -131,8 +142,6 @@ class Crawler(object):
                 self.find_email()
 
                 if self.emails_found is not None:
-                    self.emails_found = self.emails_found.group(0)
-                    self.emails_found = self.emails_found.encode('ascii', 'ignore')
                     finds[counter] = {}
                     finds[counter]['url'] = url
                     finds[counter]['emails'] = self.emails_found
