@@ -118,10 +118,12 @@ class Crawler(object):
             return False
 
     def find_email(self):
-        pattern = self.re.compile(r'[\w\.-]+@[\w\.-]+')
+        pattern = self.re.compile(r'[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+')
         
         for x in self.re.findall(pattern, self.site_html.text):
-            if x in self.gtld:
+            current_email_gtld = x.rsplit('.', 1)[1].upper()
+          
+            if current_email_gtld in self.gtld:
                 x.encode('ascii', 'ignore')
                 self.emails_found.append(x)
 
