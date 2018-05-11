@@ -149,7 +149,7 @@ class Crawler(object):
             if self.fetch_html(url) is True:
                 self.find_email()
 
-                if is self.emails_found:
+                if self.emails_found:
                     finds[counter] = {}
                     finds[counter]['url'] = url
                     finds[counter]['emails'] = self.emails_found
