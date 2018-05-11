@@ -10,3 +10,4 @@ six==1.11.0
 urllib3==1.22
 virtualenv==15.2.0
 webencodings==0.5.1
+flask==1.0.2
