@@ -162,6 +162,7 @@ class Crawler(object):
         self.scrapped_data['errors'] = self.urls_with_errors
         self.scrapped_data['finds'] = {}
         self.scrapped_data['finds'] = finds
+        self.scrapped_data['all_links'] = self.links
 
         return self.scrapped_data
 
