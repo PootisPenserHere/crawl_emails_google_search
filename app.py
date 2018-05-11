@@ -145,6 +145,7 @@ class Crawler(object):
 
         for url in self.links:
             self.site_html = ''
+            self.emails_found = []
             if self.fetch_html(url) is True:
                 self.find_email()
 
@@ -161,9 +162,6 @@ class Crawler(object):
         self.scrapped_data['errors'] = self.urls_with_errors
         self.scrapped_data['finds'] = {}
         self.scrapped_data['finds'] = finds
-
-        # Clearing variables 
-        self.urls_with_errors = []
 
         return self.scrapped_data
 
