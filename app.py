@@ -131,6 +131,9 @@ class Crawler(object):
                 x.encode('ascii', 'ignore')
                 self.emails_found.append(x)
 
+        # Removes duplicates 
+        list(set(self.emails_found))
+
     def random_number(self):
         number = self.sr.choice(xrange(self.minimum_time_per_page, self.maximum_time_per_page))
         self.random_wait_time = number
@@ -158,6 +161,9 @@ class Crawler(object):
         self.scrapped_data['errors'] = self.urls_with_errors
         self.scrapped_data['finds'] = {}
         self.scrapped_data['finds'] = finds
+
+        # Clearing variables 
+        self.urls_with_errors = []
 
         return self.scrapped_data
 
